@@ -464,10 +464,9 @@ func (db *Database) Size() (diffs common.StorageSize, nodes common.StorageSize) 
 }
 
 type SnapshotRet struct {
-	Index     int         `json:"index"`
-	Number    uint64      `json:"number"`
-	Root      common.Hash `json:"root"`
-	BlockHash common.Hash `json:"blockhash"`
+	Index  int         `json:"index"`
+	Number uint64      `json:"number"`
+	Root   common.Hash `json:"root"`
 }
 
 type SnapshotStatsRet struct {
