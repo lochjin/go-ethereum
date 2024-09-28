@@ -463,6 +463,53 @@ func (db *Database) Size() (diffs common.StorageSize, nodes common.StorageSize) 
 	return diffs, nodes
 }
 
+type SnapshotRet struct {
+	Index     int         `json:"index"`
+	Number    uint64      `json:"number"`
+	Root      common.Hash `json:"root"`
+	BlockHash common.Hash `json:"blockhash"`
+}
+
+type SnapshotStatsRet struct {
+	Total     int           `json:"total"`
+	Header    common.Hash   `json:"header"`
+	DiskRoot  common.Hash   `json:"diskroot"`
+	Snapshots []SnapshotRet `json:"snapshots"`
+}
+
+func (db *Database) Debug(root common.Hash) interface{} {
+
+	lay := db.tree.get(root)
+	if lay == nil {
+		return nil
+	}
+	srs := SnapshotStatsRet{
+		Total:     db.tree.len(),
+		Header:    root,
+		DiskRoot:  db.tree.bottom().root,
+		Snapshots: []SnapshotRet{},
+	}
+	idx := 0
+	for {
+		sr := SnapshotRet{
+			Index: idx,
+			Root:  lay.rootHash(),
+		}
+		diff, ok := lay.(*diffLayer)
+		if ok {
+			sr.Number = diff.block
+		}
+		srs.Snapshots = append(srs.Snapshots, sr)
+		idx++
+		parent := lay.parentLayer()
+		if parent == nil {
+			break
+		}
+		lay = parent
+	}
+	return srs
+}
+
 // Initialized returns an indicator if the state data is already
 // initialized in path-based scheme.
 func (db *Database) Initialized(genesisRoot common.Hash) bool {
